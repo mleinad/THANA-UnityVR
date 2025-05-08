@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using UnityEngine;
 
 
@@ -52,3 +53,12 @@ public class EmotionalValue
     }
 }
     
+=======
+﻿namespace DefaultNamespace
+{
+    public class EmotionalValue
+    {
+        
+    }
+}
+>>>>>>> d8e11d5185d46293cd07b8d4266baa1168d51337
