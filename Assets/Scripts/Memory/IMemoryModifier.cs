@@ -5,7 +5,5 @@ using UnityEngine;
 interface IMemoryModifier
 {
     EmotionalValue GetEmotionalImpact();
-
     public int ToggleVisibility(int value);
-    
 }

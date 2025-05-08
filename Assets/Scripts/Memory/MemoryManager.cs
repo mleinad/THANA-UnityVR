@@ -9,25 +9,20 @@ public class MemoryManager : MonoBehaviour
     [RequireInterface(typeof(IMemoryModifier))]
     public List<UnityEngine.Object> memoryModifiers;
     
+    EmotionalValue emotionalValue;
     
     // Start is called before the first frame update
     void Start()
     {
-        
+        emotionalValue = new EmotionalValue();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
+    
     void GetMemoryValue()
     {
-        foreach (var m in memoryModifiers)
+        
+        foreach (IMemoryModifier m in memoryModifiers)
         {
-          
+            emotionalValue.Add(m.GetEmotionalImpact());
         }
     }
 }
