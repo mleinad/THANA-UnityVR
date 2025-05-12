@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿using UnityEngine;
+using UnityEngine;
 
 
 public class EmotionalValue
@@ -52,13 +51,3 @@ public class EmotionalValue
         regret /= total;
     }
 }
-    
-=======
-﻿namespace DefaultNamespace
-{
-    public class EmotionalValue
-    {
-        
-    }
-}
->>>>>>> d8e11d5185d46293cd07b8d4266baa1168d51337

@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿using UnityEngine;
+using UnityEngine;
 
 public class EmotionLight: MonoBehaviour
 {
@@ -13,12 +12,3 @@ public class EmotionLight: MonoBehaviour
        
         }
 }
-=======
-﻿namespace DefaultNamespace
-{
-    public class EmotionLight
-    {
-        
-    }
-}
->>>>>>> d8e11d5185d46293cd07b8d4266baa1168d51337
