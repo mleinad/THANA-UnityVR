@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 43b25b61d905aa7419c090926a80d551
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _pass: {instanceID: 0}
+  - _blitShader: {instanceID: 0}
+  - _blit: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
