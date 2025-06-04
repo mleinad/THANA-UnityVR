@@ -1,53 +1,47 @@
 using UnityEngine;
+using System;
 
-
+[Serializable]
 public class EmotionalValue
 {
-    public float anger { get; private set; }
-    public float suspicion { get; private set; } // Suspicion
-    public float happiness { get; private set; }
-    public float regret { get; private set; }
-
-    public EmotionalValue(float anger = 0f, float consciousness = 0f, float happiness = 0f, float regret = 0f)
-    {
-        this.anger = anger;
-        suspicion = consciousness;
-        this.happiness = happiness;
-        this.regret = regret;
-    }
-
-    public void Add(EmotionalValue other)
-    {
-        anger += other.anger;
-        suspicion += other.suspicion;
-        happiness += other.happiness;
-        regret += other.regret;
-    }
-
-    public void ClampValues(float max = 1f)
-    {
-        anger = Mathf.Clamp(anger, 0, max);
-        suspicion = Mathf.Clamp(suspicion, 0, max);
-        happiness = Mathf.Clamp(happiness, 0, max);
-        regret = Mathf.Clamp(regret, 0, max);
-    }
+    [Range(0f,1f)] public float anger;
+    [Range(0f,1f)] public float suspicion;
+    [Range(0f,1f)] public float happiness;
+    [Range(0f,1f)] public float regret;
+    
 
     public string GetDominantEmotion()
     {
-        float max = Mathf.Max(anger, suspicion, happiness, regret);
-        if (Mathf.Approximately(max, anger)) return "Anger";
-        if (Mathf.Approximately(max, suspicion)) return "Consciousness";
-        if (Mathf.Approximately(max, happiness)) return "Happiness";
-        return "Regret";
+        return string.Empty;
+    }
+    
+    public static EmotionalValue operator + (EmotionalValue a, EmotionalValue b)
+    {
+        return new EmotionalValue
+        {
+            anger     = a.anger     + b.anger,
+            suspicion = a.suspicion + b.suspicion,
+            happiness = a.happiness + b.happiness,
+            regret    = a.regret    + b.regret
+        };
     }
 
-    public void Normalize()
+    public static EmotionalValue operator /(EmotionalValue a, int b)
     {
-        float total = anger + suspicion + happiness + regret;
-        if (total == 0) return;
-        anger /= total;
-        suspicion /= total;
-        happiness /= total;
-        regret /= total;
+        return new EmotionalValue
+        {
+            anger     = a.anger     / b,
+            suspicion = a.suspicion / b,
+            happiness = a.happiness / b,
+            regret    = a.regret    / b,
+        };
+    }
+
+    public void Empty()
+    {
+        anger = 0f;
+        suspicion = 0f;
+        happiness = 0f;
+        regret = 0f;
     }
 }

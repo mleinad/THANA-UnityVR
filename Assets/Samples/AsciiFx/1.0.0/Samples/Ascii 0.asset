@@ -29,18 +29,18 @@ MonoBehaviour:
   active: 1
   m_Scale:
     m_OverrideState: 1
-    m_Value: 0.738
+    m_Value: 0.632
   m_Ascii:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 0}
   m_Image:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0, b: 0, a: 0}
+    m_Value: {r: 0.33, g: 0.33, b: 0.33, a: 0}
   m_Gradient:
     m_OverrideState: 0
     m_Value: {fileID: 0}
   m_Depth:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   m_Fps:
     m_OverrideState: 0
