@@ -1,128 +1,90 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using AYellowpaper;
-using Managers;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Mechanics
+namespace Managers
 {
     public class MemoryManager : MonoBehaviour
     {
         [RequireInterface(typeof(IMemoryModifier))]
         public List<UnityEngine.Object> memoryModifiers;
 
-        private EmotionalValue sceneEmotionalValue = new EmotionalValue();
 
-        [SerializeField] private float _anger;
-        [SerializeField] private float _suspicion;
-        [SerializeField] private float _happiness;
-        [SerializeField] private float _regret;
+        [Header("Current Emotional Status")]
+      
+        [SerializeField, Range(0f, 1f)] private float _anger;
+        [SerializeField, Range(0f, 1f)] private float _suspicion;
+        [SerializeField, Range(0f, 1f)] private float _happiness;
+        [SerializeField, Range(0f, 1f)] private float _regret;
         
-        [Header("Emotion Thresholds")]
-        [SerializeField, Range(0f, 1f)] private float angerThreshold = 0.7f;
-        [SerializeField, Range(0f, 1f)] private float happinessThreshold = 0.7f;
-        [SerializeField, Range(0f, 1f)] private float regretThreshold = 0.7f;
-        [SerializeField, Range(0f, 1f)] private float suspicionThreshold = 0.7f;
 
-        
-        public float Anger
-        {
-            get => _anger;
-            private set
-            {
-                if (!Mathf.Approximately(_anger, value))
-                {
-                    _anger = value;
-                    OnAngerChanged(_anger);
-                }
-            }
-        }
-        public float Suspicion
-        {
-            get => _suspicion;
-            private set
-            {
-                if (!Mathf.Approximately(_suspicion, value))
-                {
-                    _suspicion = value;
-                    OnSuspicionChanged(_suspicion);
-                }
-            }
-        }
-        public float Happiness
-        {
-            get => _happiness;
-            private set
-            {
-                if (!Mathf.Approximately(_happiness, value))
-                {
-                    _happiness = value;
-                    OnHappinessChanged(_happiness);
-                }
-            }
-        }
-        public float Regret
-        {
-            get => _regret;
-            private set
-            {
-                if (!Mathf.Approximately(_regret, value))
-                {
-                    _regret = value;
-                    OnRegretChanged(_regret);
-                }
-            }
-        }
-        
-        
-        
-        private void Update()
-        {
-            sceneEmotionalValue.Empty();
-            GetMemoryValue();
+        public event Action<EmotionalValue> EmotionalStateChanged;
 
-            Anger = sceneEmotionalValue.anger;
-            Suspicion = sceneEmotionalValue.suspicion;
-            Happiness = sceneEmotionalValue.happiness;
-            Regret = sceneEmotionalValue.regret;
+
+        private EmotionalValue CurrentEmotions { get; set; } = new EmotionalValue();
+        private EmotionalValue _sceneEmotionalValue = new EmotionalValue();
+        
+        public static MemoryManager Instance;
+        
+        private void OnDisable() {
+            ObjectSwap.OnAnySelectionChanged -= RecalculateEmotions;
+        }
+
+
+        private async void Awake()
+        {
+            await Initialize();
+        }
+
+        public async UniTask Initialize()
+        {
+            await UniTask.Yield();
+
+            Instance = this;
+            CurrentEmotions.Empty();
+            _sceneEmotionalValue.Empty();
+
+            ObjectSwap.OnAnySelectionChanged += RecalculateEmotions;
+
+            RecalculateEmotions();
+        }
+
+        private void RecalculateEmotions()
+        {
+            Debug.Log("RecalculateEmotions...");
+            if (memoryModifiers == null || memoryModifiers.Count == 0) return;
+
+            EmotionalValue total = new EmotionalValue();
             
-            LightManager.Instance.UpdateLightColor(Anger, Happiness, Regret);
-        }
+            int count = 0;
 
-        private void GetMemoryValue()
-        {
-            int total = memoryModifiers.Count;
-            foreach (IMemoryModifier modifier in memoryModifiers)
+            foreach (var obj in memoryModifiers)
             {
-                sceneEmotionalValue += modifier.GetEmotionalImpact() / total;
+                if (obj is IMemoryModifier modifier) {
+                    total = total + modifier.GetEmotionalImpact();
+                    count++;
+                }
             }
-        }
 
-        #region Change Handlers
-        
-        private void OnAngerChanged(float value)
-        {
-        }
+            if (count == 0) return;
 
-        private void OnSuspicionChanged(float value)
-        {
-            if (value > suspicionThreshold)
-            {
-                LightManager.Instance.FlickerLights(value);
-            }else if (value < suspicionThreshold)
-            {
-                LightManager.Instance.FlickerLights(0);
-            }
-        }
-
-        private void OnHappinessChanged(float value)
-        {
-        }
-
-        private void OnRegretChanged(float value)
-        {
+            EmotionalValue average = total / count;
+            
+            CurrentEmotions = average;
+            EmotionalStateChanged?.Invoke(CurrentEmotions);
+            
+            DebugValues();
         }
         
-        #endregion        
+
+        private void DebugValues()
+        {
+            _anger     =     CurrentEmotions.anger;
+            _suspicion =     CurrentEmotions.suspicion;
+            _happiness =     CurrentEmotions.happiness;
+            _regret    =     CurrentEmotions.regret;
+        }
     }
 }

@@ -44,4 +44,16 @@ public class EmotionalValue
         happiness = 0f;
         regret = 0f;
     }
+    
+    public override int GetHashCode() => (anger, suspicion, happiness, regret).GetHashCode();
+    
+    public override bool Equals(object obj)
+    {
+        if (obj is not EmotionalValue other) return false;
+
+        return Mathf.Approximately(anger, other.anger) &&
+               Mathf.Approximately(suspicion, other.suspicion) &&
+               Mathf.Approximately(happiness, other.happiness) &&
+               Mathf.Approximately(regret, other.regret);
+    }
 }

@@ -1,6 +1,10 @@
 fileFormatVersion: 2
+<<<<<<<< Updated upstream:Assets/GhostlyHand/URP/Ghostly Hands For URP.unitypackage.meta
+guid: e6f91fe5e41ebae4aa20ce5b28048209
+========
 guid: 82a2a5d660b241d4383c95b226600aa9
 folderAsset: yes
+>>>>>>>> Stashed changes:Assets/GhostlyHand.meta
 DefaultImporter:
   externalObjects: {}
   userData: 

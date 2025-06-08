@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7401820087376229925}
   - component: {fileID: 8589170587227663348}
   - component: {fileID: 7244970984350782483}
-  - component: {fileID: 7712312715773971090}
   - component: {fileID: 4266483134994069963}
   m_Layer: 0
   m_Name: Cube
@@ -19,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7401820087376229925
 Transform:
   m_ObjectHideFlags: 0
@@ -85,27 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7712312715773971090
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 949032502484984637}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4266483134994069963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,8 +98,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   variant: {fileID: 949032502484984637}
   emotions:
-    anger: 0
+    anger: 1
     suspicion: 0
     happiness: 0
     regret: 0
-  isSelected: 0
+  isDefault: 0
+  _isSelected: 0

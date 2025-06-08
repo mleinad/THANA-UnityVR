@@ -16,22 +16,48 @@ public class DebugController : MonoBehaviour
     public float holdDistance = 2f;
     public LayerMask interactableLayer;
 
+    [Header("Gravity")]
+    public float gravity = -9.81f;
+    public float groundedOffset = -0.1f;
+    private float verticalVelocity = 0f;
+
     private CharacterController controller;
     private float xRotation = 0f;
     private Transform heldObject = null;
+
+    [SerializeField] private GameObject uiText;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;
+        Cursor.visible = false;
+        uiText.SetActive(false);
     }
 
     void Update()
     {
-        HandleMovement();
         HandleMouseLook();
+        HandleMovement();
         HandleDragAndDrop();
+
+        if (heldObject != null)
+        {
+            var os = heldObject.GetComponent<ObjectSwap>();
+
+            if (os != null)
+            {
+                uiText.SetActive(true);
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    os.SwitchVariant();
+                }
+            }
+        }
+        else
+        {
+            uiText.SetActive(false);
+        }
     }
 
     void HandleMovement()
@@ -40,6 +66,19 @@ public class DebugController : MonoBehaviour
         float v = Input.GetAxis("Vertical");
 
         Vector3 move = transform.right * h + transform.forward * v;
+
+        // Apply gravity
+        if (controller.isGrounded && verticalVelocity < 0f)
+        {
+            verticalVelocity = -2f; // small downward force to stay grounded
+        }
+        else
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+
+        move.y = verticalVelocity;
+
         controller.Move(move * moveSpeed * Time.deltaTime);
     }
 

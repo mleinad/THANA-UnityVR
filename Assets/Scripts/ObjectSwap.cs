@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,7 +8,9 @@ public class ObjectSwap : MonoBehaviour, IMemoryModifier
     {
         [SerializeField]
         private List<AlternativeMemoryObject> alternatives = new List<AlternativeMemoryObject>();
-       
+        
+        public static event Action OnAnySelectionChanged;
+
         public int selectedIndex;
         private void Awake()
         {
@@ -25,44 +28,55 @@ public class ObjectSwap : MonoBehaviour, IMemoryModifier
             }
         }
 
+        public void LoadAlternatives()
+        {
+            foreach (var altComponent in alternatives)
+            {
+                var _altComponent = Instantiate(altComponent);
+                _altComponent.variant = _altComponent.gameObject; // Assign the child as the variant
+                if(_altComponent.isDefault) _altComponent.Activate(); else _altComponent.Deactivate();
+            }
+        }
+
         public EmotionalValue GetEmotionalImpact()
         {
-            foreach (var alternative in alternatives.Where(alternative => alternative.isSelected))
-            {
-                return alternative.emotions;
-            }
-
-            return new EmotionalValue();
+            return alternatives[selectedIndex].GetEmotionalImpact();
         }
 
-        public void ActivateVariant(int index)
+        private void ActivateVariant(int index)
         {
             selectedIndex = index;
-            foreach (var alt in alternatives)
-            {
-                alt.Deactivate();
-            }
-            alternatives[index].Activate();
+            
+            OnVariantSelected(alternatives[index]);
         }
-
         
         public void OnVariantSelected(AlternativeMemoryObject selected)
         {
             for (int i = 0; i < alternatives.Count; i++)
             {
                 var alt = alternatives[i];
-                if (alt != selected)
-                {
-                    alt.isSelected = false;
-                    alt.Deactivate();
-                }
-                else
-                {
-                    selectedIndex = i;
-                    alt.Activate();
+
+                    if (alt != null)
+                    {
+                        
+                    if (alt != selected)
+                    {
+                        alt.Deactivate();
+                    }
+                    else
+                    {
+                        selectedIndex = i;
+                        alt.Activate();
+                    }
+                    OnAnySelectionChanged?.Invoke();
                 }
             }
         }
-        
+
+        public void SwitchVariant()
+        {
+            selectedIndex = selectedIndex == alternatives.Count - 1 ? 0 : selectedIndex + 1;
+            ActivateVariant(selectedIndex);
+        }
         
     }

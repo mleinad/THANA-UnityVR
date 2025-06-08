@@ -1,24 +1,22 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Managers
 {
     public class LightManager : MonoBehaviour
     {
-        [SerializeField] private List<Light> scenelights;
-
+        [Header("Timing")]
         [SerializeField, Min(0f)] private float timeBetweenIntensity = 0.1f;
-        [SerializeField, Range(0f, 1f)] private float flickerRange = 0.5f; // % of original intensity
+        [SerializeField, Range(0f, 1f)] private float flickerRange = 0.5f;
+        [SerializeField] private float transitionSpeed = 2f;
 
-        public static LightManager Instance;
+        [Header("Light Setup")]
+        [SerializeField] private List<Light> sceneLights = new();
 
-        private float _currentTimer;
-        private float _suspicionMultiplier = 0f;
-
-        private readonly List<float> _originalIntensities = new List<float>();
-        private readonly List<Color> _originalColors = new List<Color>();
-        
-        [Header("Emotion Light Colors")]
+        [Header("Emotion Colors")]
         [SerializeField] private Color angerColor = Color.red;
         [SerializeField] private Color happinessColor = Color.yellow;
         [SerializeField] private Color regretColor = Color.blue;
@@ -27,84 +25,157 @@ namespace Managers
         [SerializeField, Range(0f, 1f)] private float angerThreshold = 0.7f;
         [SerializeField, Range(0f, 1f)] private float happinessThreshold = 0.7f;
         [SerializeField, Range(0f, 1f)] private float regretThreshold = 0.7f;
+        [SerializeField, Range(0f, 1f)] private float suspicionThreshold = 0.7f;
 
-        
-        private void Awake()
+        [Header("Color Intensity")]
+        [SerializeField, Range(0f, 5f)] private float colorIntensityMultiplier = 1f;
+
+        private readonly List<float> _originalIntensities = new();
+        private readonly List<Color> _originalColors = new();
+
+        private float _suspicionMultiplier = 0f;
+        private float _currentTimer;
+        private CancellationTokenSource _transitionCts;
+
+        private async void Awake()
         {
-            Instance = this;
+            await CacheLightsInScene();
+            await WaitForMemoryManager();
+        }
 
-            foreach (var light in scenelights)
+        private async UniTask CacheLightsInScene()
+        {
+            sceneLights = FindObjectsOfType<Light>().ToList();
+
+            _originalIntensities.Clear();
+            _originalColors.Clear();
+
+            foreach (var light in sceneLights)
             {
                 _originalIntensities.Add(light.intensity);
                 _originalColors.Add(light.color);
-
             }
+
+            await UniTask.Yield();
         }
 
-        public void FlickerLights(float amount)
+        private async UniTask WaitForMemoryManager()
         {
-            _suspicionMultiplier = amount;
-
-            if (amount == 0f)
-            {
-                for (int i = 0; i < scenelights.Count; i++)
-                {
-                    scenelights[i].intensity = _originalIntensities[i];
-                }
-            }
+            await UniTask.WaitUntil(() => MemoryManager.Instance != null);
+            MemoryManager.Instance.EmotionalStateChanged += OnEmotionsChanged;
+            Debug.Log("LightManager initialized");
         }
 
-        private void UpdateFlickerLights()
+        private void OnDisable()
         {
-            _currentTimer += Time.deltaTime;
-            if (_currentTimer < timeBetweenIntensity) return;
+            if (MemoryManager.Instance != null)
+                MemoryManager.Instance.EmotionalStateChanged -= OnEmotionsChanged;
 
-            float scaledFlickerRange = flickerRange * _suspicionMultiplier;
-
-            for (int i = 0; i < scenelights.Count; i++)
-            {
-                float original = _originalIntensities[i];
-                float min = Mathf.Max(0f, original - (scaledFlickerRange * original));
-                float max = original + (scaledFlickerRange * original);
-                scenelights[i].intensity = Random.Range(min, max);
-            }
-
-            _currentTimer = 0;
+            _transitionCts?.Cancel();
+            _transitionCts?.Dispose();
         }
 
-        public void UpdateLightColor(float anger, float happiness, float regret)
+        private void OnEmotionsChanged(EmotionalValue emotions)
         {
-            Color? newColor = null;
+            Debug.Log("Emotional state changed");
 
-            if (anger > angerThreshold)
-                newColor = angerColor;
-            else if (happiness > happinessThreshold)
-                newColor = happinessColor;
-            else if (regret > regretThreshold)
-                newColor = regretColor;
+            Color emotionColor = GetDominantEmotionColor(emotions, out float strength);
+            _suspicionMultiplier = emotions.suspicion >= suspicionThreshold ? emotions.suspicion : 0f;
 
-            if (newColor.HasValue)
+            _transitionCts?.Cancel();
+            _transitionCts = new CancellationTokenSource();
+            SmoothTransitionLights(emotionColor, strength, _transitionCts.Token).Forget();
+        }
+
+        private Color GetDominantEmotionColor(EmotionalValue emotions, out float strength)
+        {
+            strength = 0f;
+
+            if (emotions.anger > angerThreshold &&
+                emotions.anger >= emotions.happiness &&
+                emotions.anger >= emotions.regret)
             {
-                foreach (var light in scenelights)
-                {
-                    light.color = newColor.Value;
-                }
+                strength = emotions.anger;
+                return angerColor;
             }
-            else
+
+            if (emotions.happiness > happinessThreshold &&
+                emotions.happiness >= emotions.anger &&
+                emotions.happiness >= emotions.regret)
             {
-                for (int i = 0; i < scenelights.Count; i++)
+                strength = emotions.happiness;
+                return happinessColor;
+            }
+
+            if (emotions.regret > regretThreshold)
+            {
+                strength = emotions.regret;
+                return regretColor;
+            }
+
+            return Color.black;
+        }
+
+        private async UniTaskVoid SmoothTransitionLights(Color emotionColor, float emotionStrength, CancellationToken token)
+        {
+            float t = 0f;
+
+            while (t < 1f && !token.IsCancellationRequested)
+            {
+                t += Time.deltaTime * transitionSpeed;
+
+                for (int i = 0; i < sceneLights.Count; i++)
                 {
-                    scenelights[i].color = _originalColors[i];
+                    Light light = sceneLights[i];
+                    Color baseColor = _originalColors[i];
+                    float baseIntensity = _originalIntensities[i];
+
+                    // Additive tint based on emotion and intensity multiplier
+                    Color addedColor = emotionColor * emotionStrength * colorIntensityMultiplier;
+                    Color targetColor = ClampColor(baseColor + addedColor);
+
+                    float targetIntensity = baseIntensity * Mathf.Lerp(0.7f, 1.3f, emotionStrength);
+
+                    light.color = Color.Lerp(light.color, targetColor, t);
+                    light.intensity = Mathf.Lerp(light.intensity, targetIntensity, t);
                 }
+
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
         }
 
         private void Update()
         {
-            if (_suspicionMultiplier > 0) ;
+            if (_suspicionMultiplier > 0f)
+                FlickerLights();
+        }
+
+        private void FlickerLights()
+        {
+            _currentTimer += Time.deltaTime;
+            if (_currentTimer < timeBetweenIntensity) return;
+
+            float scaledRange = flickerRange * _suspicionMultiplier;
+
+            for (int i = 0; i < sceneLights.Count; i++)
             {
-                UpdateFlickerLights();
+                float baseIntensity = _originalIntensities[i];
+                float min = Mathf.Max(0f, baseIntensity - (scaledRange * baseIntensity));
+                float max = baseIntensity + (scaledRange * baseIntensity);
+                sceneLights[i].intensity = Random.Range(min, max);
             }
+
+            _currentTimer = 0f;
+        }
+
+        private static Color ClampColor(Color color)
+        {
+            return new Color(
+                Mathf.Clamp01(color.r),
+                Mathf.Clamp01(color.g),
+                Mathf.Clamp01(color.b),
+                1f
+            );
         }
     }
 }

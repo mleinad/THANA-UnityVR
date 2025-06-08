@@ -16,7 +16,9 @@ public class AlternativeMemoryObject : MonoBehaviour
         set
         {
             if (_isSelected == value) return;
+            
             _isSelected = value;
+            
             if (_isSelected)
             {
                 _parent?.OnVariantSelected(this);
@@ -29,11 +31,23 @@ public class AlternativeMemoryObject : MonoBehaviour
         _parent = GetComponentInParent<ObjectSwap>();
         isSelected = isDefault;
     }
+    public EmotionalValue GetEmotionalImpact()
+    {
+        return isSelected ? emotions : new EmotionalValue(); // 0 if not selected
+    }
+    public void Activate()
+    {
+        variant.SetActive(true);
+        isSelected = true;
+    }
 
-    public void Activate() => variant.SetActive(true);
-    public void Deactivate() => variant.SetActive(false);
-    
-    
+    public void Deactivate()
+    {
+        variant.SetActive(false);
+        isSelected = false;
+    }
+
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
