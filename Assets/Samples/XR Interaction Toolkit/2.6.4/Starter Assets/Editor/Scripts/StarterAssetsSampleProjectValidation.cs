@@ -76,7 +76,7 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples
                         IsRuleEnabled = () => s_InputSystemPackageAddRequest == null || s_InputSystemPackageAddRequest.IsCompleted,
                         Message = $"[{k_StarterAssetsSampleName}] Input System ({k_InputSystemPackageName}) package must be at version {s_RecommendedPackageVersion} or higher to use Project-wide Actions with {k_InputActionAssetName}.",
                         Category = k_Category,
-                        CheckPredicate = () => InputSystem.actions == null || PackageVersionUtility.GetPackageVersion(k_InputSystemPackageName) >= s_RecommendedPackageVersion,
+                        CheckPredicate = () => InputSystem.settings == null || PackageVersionUtility.GetPackageVersion(k_InputSystemPackageName) >= s_RecommendedPackageVersion,
                         FixIt = () =>
                         {
                             if (s_InputSystemPackageAddRequest == null || s_InputSystemPackageAddRequest.IsCompleted)
@@ -84,7 +84,7 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples
                         },
                         HelpText = "This version added support for automatic loading of custom extensions of InputProcessor, InputInteraction, and InputBindingComposite defined by this package.",
                         FixItAutomatic = true,
-                        Error = InputSystem.actions != null && (InputSystem.actions.name == k_InputActionAssetName || AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(InputSystem.actions)) == k_InputActionAssetGuid),
+                        Error = InputSystem.settings != null && (InputSystem.settings.name == k_InputActionAssetName || AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(InputSystem.settings)) == k_InputActionAssetGuid),
                     });
 #endif
             }
