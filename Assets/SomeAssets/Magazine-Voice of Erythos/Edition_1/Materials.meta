@@ -1,6 +1,10 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/SomeAssets/Magazine-Voice of Erythos/Edition_1/Materials.meta
 guid: ce3ab36402dcd0948ba0d8b2b8d88c74
 folderAsset: yes
+========
+guid: 722d1e529d1dabf439fa5713908b3b32
+>>>>>>>> 9804e65d8403424795f488cbfee705e9c9c0f4c4:Assets/museum-interior/source/Museum.glb.meta
 DefaultImporter:
   externalObjects: {}
   userData: 
