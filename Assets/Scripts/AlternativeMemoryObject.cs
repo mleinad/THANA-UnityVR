@@ -28,6 +28,7 @@ public class AlternativeMemoryObject : MonoBehaviour
 
     private void Awake()
     {
+        variant = this.gameObject;
         _parent = GetComponentInParent<ObjectSwap>();
         isSelected = isDefault;
     }

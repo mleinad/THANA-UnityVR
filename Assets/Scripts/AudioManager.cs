@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Managers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SoundManager : MonoBehaviour
 {
     [Header("Audio Clips")]
-    [SerializeField] private AudioClip angerClip;
+    [SerializeField] private AudioClip suspiciousClip;
     [SerializeField] private AudioClip happinessClip;
     [SerializeField] private AudioClip regretClip;
 
@@ -15,7 +16,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private float fadeSpeed = 1f;
 
     private Dictionary<string, AudioSource> emotionSources = new();
-    private float targetAngerVol, targetHappinessVol, targetRegretVol;
+    private float targetSuspiciousVol, targetHappinessVol, targetRegretVol;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class SoundManager : MonoBehaviour
 
     private void CreateAudioSources()
     {
-        emotionSources["anger"] = CreateLoopingSource(angerClip);
+        emotionSources["suspicious"] = CreateLoopingSource(suspiciousClip);
         emotionSources["happiness"] = CreateLoopingSource(happinessClip);
         emotionSources["regret"] = CreateLoopingSource(regretClip);
     }
@@ -70,23 +71,23 @@ public class SoundManager : MonoBehaviour
     private void OnEmotionsChanged(EmotionalValue emotions)
     {
         // Normalize emotional weights (focus on dominant blend)
-        float total = emotions.anger + emotions.happiness + emotions.regret;
+        float total = emotions.suspicion + emotions.happiness + emotions.regret;
 
         if (total > 0f)
         {
-            targetAngerVol = (emotions.anger / total) * volumeMultiplier;
+            targetSuspiciousVol = (emotions.suspicion / total) * volumeMultiplier;
             targetHappinessVol = (emotions.happiness / total) * volumeMultiplier;
             targetRegretVol = (emotions.regret / total) * volumeMultiplier;
         }
         else
         {
-            targetAngerVol = targetHappinessVol = targetRegretVol = 0f;
+            targetSuspiciousVol = targetHappinessVol = targetRegretVol = 0f;
         }
     }
 
     private void BlendVolumes()
     {
-        emotionSources["anger"].volume = Mathf.MoveTowards(emotionSources["anger"].volume, targetAngerVol, fadeSpeed * Time.deltaTime);
+        emotionSources["suspicious"].volume = Mathf.MoveTowards(emotionSources["suspicious"].volume, targetSuspiciousVol, fadeSpeed * Time.deltaTime);
         emotionSources["happiness"].volume = Mathf.MoveTowards(emotionSources["happiness"].volume, targetHappinessVol, fadeSpeed * Time.deltaTime);
         emotionSources["regret"].volume = Mathf.MoveTowards(emotionSources["regret"].volume, targetRegretVol, fadeSpeed * Time.deltaTime);
     }

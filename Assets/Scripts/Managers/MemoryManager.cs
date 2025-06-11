@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AYellowpaper;
 using Cysharp.Threading.Tasks;
+using Interactions;
 using UnityEngine;
 
 namespace Managers
@@ -30,6 +31,7 @@ namespace Managers
         
         private void OnDisable() {
             ObjectSwap.OnAnySelectionChanged -= RecalculateEmotions;
+     //       DisturbDetection.OnDisturbDetected -= RecalculateEmotions;
         }
 
 
@@ -47,6 +49,7 @@ namespace Managers
             _sceneEmotionalValue.Empty();
 
             ObjectSwap.OnAnySelectionChanged += RecalculateEmotions;
+          //  DisturbDetection.OnDisturbDetected -= RecalculateEmotions;
 
             RecalculateEmotions();
         }
@@ -56,27 +59,39 @@ namespace Managers
             Debug.Log("RecalculateEmotions...");
             if (memoryModifiers == null || memoryModifiers.Count == 0) return;
 
-            EmotionalValue total = new EmotionalValue();
-            
-            int count = 0;
+            EmotionalValue regularTotal = new EmotionalValue();
+            float suspicionOnlyTotal = 0f;
+            int regularCount = 0;
 
             foreach (var obj in memoryModifiers)
             {
-                if (obj is IMemoryModifier modifier) {
-                    total = total + modifier.GetEmotionalImpact();
-                    count++;
+                if (obj is IMemoryModifier modifier)
+                {
+                    EmotionalValue impact = modifier.GetEmotionalImpact();
+
+                    if (modifier is ISuspicionOnlyModifier)
+                    {
+                   //     suspicionOnlyTotal += impact.suspicion;
+                    }
+                    else
+                    {
+                        regularTotal += impact;
+                        regularCount++;
+                    }
                 }
             }
 
-            if (count == 0) return;
+            if (regularCount == 0) return;
 
-            EmotionalValue average = total / count;
-            
+            EmotionalValue average = regularTotal / regularCount;
+           // average.suspicion += suspicionOnlyTotal;
+
             CurrentEmotions = average;
             EmotionalStateChanged?.Invoke(CurrentEmotions);
-            
+
             DebugValues();
         }
+
         
 
         private void DebugValues()

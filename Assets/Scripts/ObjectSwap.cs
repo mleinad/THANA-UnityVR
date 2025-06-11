@@ -79,4 +79,13 @@ public class ObjectSwap : MonoBehaviour, IMemoryModifier
             ActivateVariant(selectedIndex);
         }
         
+        public void SwitchVariant(int direction)
+        {
+            if (alternatives == null || alternatives.Count == 0) return;
+
+            selectedIndex = (selectedIndex + direction + alternatives.Count) % alternatives.Count;
+            ActivateVariant(selectedIndex);
+        }
+
+        
     }
