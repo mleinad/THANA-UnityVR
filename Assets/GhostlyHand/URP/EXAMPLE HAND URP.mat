@@ -92,8 +92,8 @@ Material:
     - _Float1: -0.43
     - _Float2: 2.33
     - _Float3: 1
-    - _FresnelBias: 0.44
-    - _FresnelPower: 1.47
+    - _FresnelBias: 1.41
+    - _FresnelPower: 2.92
     - _FresnelScale: 3.8
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -106,15 +106,15 @@ Material:
     - _OutlineWidth: 0.05
     - _Parallax: 0.02
     - _Point1: 0
-    - _Point2: 0
-    - _Point3: 0
+    - _Point2: 2.04
+    - _Point3: 0.51
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _TransparentEndPoint: 0.96
     - _TransparentStartPoint: 1
     - _UVSec: 0
-    - _WristOpacity: 0.186
+    - _WristOpacity: 0.097
     - _XRayBias: 0
     - _XRayBias1: 0
     - _XRayIntensity: 1.5

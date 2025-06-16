@@ -19,6 +19,7 @@ namespace Managers
         [SerializeField, Range(0f, 1f)] private float _suspicion;
         [SerializeField, Range(0f, 1f)] private float _happiness;
         [SerializeField, Range(0f, 1f)] private float _regret;
+        [SerializeField, Range(0f, 1f)] private float suspicionThreshold = 0.8f;
         
 
         public event Action<EmotionalValue> EmotionalStateChanged;
@@ -31,7 +32,7 @@ namespace Managers
         
         private void OnDisable() {
             ObjectSwap.OnAnySelectionChanged -= RecalculateEmotions;
-     //       DisturbDetection.OnDisturbDetected -= RecalculateEmotions;
+            DisturbDetection.OnDisturbDetected -= OnDisturbDetected;
         }
 
 
@@ -49,7 +50,7 @@ namespace Managers
             _sceneEmotionalValue.Empty();
 
             ObjectSwap.OnAnySelectionChanged += RecalculateEmotions;
-          //  DisturbDetection.OnDisturbDetected -= RecalculateEmotions;
+            DisturbDetection.OnDisturbDetected += OnDisturbDetected;
 
             RecalculateEmotions();
         }
@@ -60,7 +61,6 @@ namespace Managers
             if (memoryModifiers == null || memoryModifiers.Count == 0) return;
 
             EmotionalValue regularTotal = new EmotionalValue();
-            float suspicionOnlyTotal = 0f;
             int regularCount = 0;
 
             foreach (var obj in memoryModifiers)
@@ -69,22 +69,14 @@ namespace Managers
                 {
                     EmotionalValue impact = modifier.GetEmotionalImpact();
 
-                    if (modifier is ISuspicionOnlyModifier)
-                    {
-                   //     suspicionOnlyTotal += impact.suspicion;
-                    }
-                    else
-                    {
                         regularTotal += impact;
                         regularCount++;
-                    }
                 }
             }
 
             if (regularCount == 0) return;
 
             EmotionalValue average = regularTotal / regularCount;
-           // average.suspicion += suspicionOnlyTotal;
 
             CurrentEmotions = average;
             EmotionalStateChanged?.Invoke(CurrentEmotions);
@@ -100,6 +92,23 @@ namespace Managers
             _suspicion =     CurrentEmotions.suspicion;
             _happiness =     CurrentEmotions.happiness;
             _regret    =     CurrentEmotions.regret;
+        }
+
+
+        private void OnDisturbDetected(GameObject disturbedObject)
+        {
+            if (disturbedObject.TryGetComponent<ThrowableMemoryObject>(out var throwableObject))
+            {
+                CurrentEmotions.suspicion += throwableObject.suspicionBoost;
+                CurrentEmotions.suspicion = Mathf.Clamp01(CurrentEmotions.suspicion); // Ensure suspicion stays within 0-1 range
+                EmotionalStateChanged?.Invoke(CurrentEmotions);
+                DebugValues();
+
+                if (CurrentEmotions.suspicion >= suspicionThreshold)
+                {
+                    Debug.Log("Losing condition triggered: Suspicion too high!");
+                }
+            }
         }
     }
 }

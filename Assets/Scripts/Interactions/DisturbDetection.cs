@@ -6,86 +6,81 @@ using UnityEngine.XR.Interaction.Toolkit;
 namespace Interactions
 {
     public class DisturbDetection : MonoBehaviour
-    {[Header("Launch Detection")]
-    [SerializeField] private float launchForceThreshold = 2.0f;
-
-    [Header("Drop Detection")]
-    [SerializeField] private float dropHeightThreshold = 1.0f;
-
-    [Header("Debug")]
-    [SerializeField] private bool debug = true;
-
-    private XRGrabInteractable grabInteractable;
-    private Rigidbody rb;
-
-    private float grabStartY = 0f;
-    
-    public static event Action OnDisturbDetected;
-
-    private void Awake()
     {
-        grabInteractable = GetComponent<XRGrabInteractable>();
-        rb = GetComponent<Rigidbody>();
-    }
+        [Header("Launch Detection")] [SerializeField]
+        private float launchForceThreshold = 2.0f;
 
-    private void OnEnable()
-    {
-        grabInteractable.selectEntered.AddListener(OnGrabbed);
-        grabInteractable.selectExited.AddListener(OnReleased);
-    }
+        [Header("Drop Detection")] [SerializeField]
+        private float dropHeightThreshold = 1.0f;
 
-    private void OnDisable()
-    {
-        grabInteractable.selectEntered.RemoveListener(OnGrabbed);
-        grabInteractable.selectExited.RemoveListener(OnReleased);
-    }
+        [Header("Debug")] [SerializeField] private bool debug = true;
 
-    private void OnGrabbed(SelectEnterEventArgs args)
-    {
-        grabStartY = transform.position.y;
+        private XRGrabInteractable grabInteractable;
+        private Rigidbody rb;
 
-        if (debug)
-            Debug.Log($"[Grabbed] Start Y: {grabStartY}");
-    }
+        private float grabStartY = 0f;
 
-    private void OnReleased(SelectExitEventArgs args)
-    {
-        float releaseSpeed = rb.velocity.magnitude;
-        float releaseY = transform.position.y;
-        float heightDrop = Mathf.Abs(releaseY - grabStartY);
+        public static event Action<GameObject> OnDisturbDetected;
 
-        if (debug)
+        private void Awake()
         {
-            Debug.Log($"[Released] Speed: {releaseSpeed}");
-            Debug.Log($"[Released] Height drop: {heightDrop}");
+            grabInteractable = GetComponent<XRGrabInteractable>();
+            rb = GetComponent<Rigidbody>();
         }
 
-        if (releaseSpeed >= launchForceThreshold)
+        private void OnEnable()
         {
-            OnLaunched(releaseSpeed);
+            grabInteractable.selectEntered.AddListener(OnGrabbed);
+            grabInteractable.selectExited.AddListener(OnReleased);
         }
-        else if (heightDrop >= dropHeightThreshold)
+
+        private void OnDisable()
         {
-            OnDropped(heightDrop);
+            grabInteractable.selectEntered.RemoveListener(OnGrabbed);
+            grabInteractable.selectExited.RemoveListener(OnReleased);
         }
-    }
 
-    private void OnLaunched(float force)
-    {
-        if (debug)
-            Debug.Log($"[LaunchDetection] Object launched with force: {force}");
+        private void OnGrabbed(SelectEnterEventArgs args)
+        {
+            grabStartY = transform.position.y;
 
-        if (OnDisturbDetected != null) OnDisturbDetected.Invoke();
-    }
+            if (debug)
+                Debug.Log($"[Grabbed] Start Y: {grabStartY}");
+        }
 
-    private void OnDropped(float dropHeight)
-    {
-        if (debug)
-            Debug.Log($"[DropDetection] Object dropped from height: {dropHeight}");
-       
-        if (OnDisturbDetected != null) OnDisturbDetected.Invoke();
+        private void OnReleased(SelectExitEventArgs args)
+        {
+            float releaseSpeed = rb.velocity.magnitude;
+            float releaseY = transform.position.y;
+            float heightDrop = Mathf.Abs(releaseY - grabStartY);
 
-    }
-    
+            if (debug)
+            {
+                Debug.Log($"[Released] Speed: {releaseSpeed}");
+                Debug.Log($"[Released] Height drop: {heightDrop}");
+            }
+
+            if (releaseSpeed >= launchForceThreshold)
+            {
+                OnLaunched(releaseSpeed);
+            }
+            else if (heightDrop >= dropHeightThreshold)
+            {
+                OnDropped(heightDrop);
+            }
+        }
+        private void OnLaunched(float force)
+        {
+                if (debug)
+                    Debug.Log($"[LaunchDetection] Object launched with force: {force}");
+                if (OnDisturbDetected != null) OnDisturbDetected.Invoke(gameObject);
+        }
+        
+        private void OnDropped(float height)
+        {
+            if (debug)
+                Debug.Log($"[LaunchDetection] Object dropped from height: {height}");
+            if (OnDisturbDetected != null) OnDisturbDetected.Invoke(gameObject);
+        }
     }
 }
