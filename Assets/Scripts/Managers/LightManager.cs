@@ -62,7 +62,7 @@ namespace Managers
         private async UniTask WaitForMemoryManager()
         {
             await UniTask.WaitUntil(() => MemoryManager.Instance != null);
-            MemoryManager.Instance.EmotionalStateChanged += OnEmotionsChanged;
+            
             Debug.Log("LightManager initialized");
         }
 
