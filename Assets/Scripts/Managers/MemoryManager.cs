@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Managers
 {
-    public class MemoryManager : MonoBehaviour
+    public class MemoryManager : MonoBehaviour, IMemoryManager
     {
         [RequireInterface(typeof(IMemoryModifier))]
         public List<UnityEngine.Object> memoryModifiers;
@@ -35,13 +35,7 @@ namespace Managers
             DisturbDetection.OnDisturbDetected -= OnDisturbDetected;
         }
 
-
-        private async void Awake()
-        {
-            await Initialize();
-        }
-
-        public async UniTask Initialize()
+        public async UniTask InitializeAsync()
         {
             await UniTask.Yield();
 
@@ -53,9 +47,9 @@ namespace Managers
             DisturbDetection.OnDisturbDetected += OnDisturbDetected;
 
             RecalculateEmotions();
+            Debug.Log("Memory Manager initialized...");
         }
-
-        private void RecalculateEmotions()
+        public void RecalculateEmotions()
         {
             Debug.Log("RecalculateEmotions...");
             if (memoryModifiers == null || memoryModifiers.Count == 0) return;
@@ -83,9 +77,6 @@ namespace Managers
 
             DebugValues();
         }
-
-        
-
         private void DebugValues()
         {
             _anger     =     CurrentEmotions.anger;
@@ -93,8 +84,6 @@ namespace Managers
             _happiness =     CurrentEmotions.happiness;
             _regret    =     CurrentEmotions.regret;
         }
-
-
         private void OnDisturbDetected(GameObject disturbedObject)
         {
             if (disturbedObject.TryGetComponent<ThrowableMemoryObject>(out var throwableObject))
@@ -110,5 +99,6 @@ namespace Managers
                 }
             }
         }
+        
     }
 }

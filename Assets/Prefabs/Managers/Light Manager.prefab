@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6824609067155983210}
-  - component: {fileID: 4300010981569101309}
+  - component: {fileID: 6200656092250232714}
   m_Layer: 0
   m_Name: Light Manager
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4300010981569101309
+--- !u!114 &6200656092250232714
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,17 +41,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8683270267536642782}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1882f852b06648db8515dcbd3a549485, type: 3}
+  m_Script: {fileID: 11500000, guid: c606526348fb4b858122efc8aba58eb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scenelights: []
-  timeBetweenIntensity: 0.1
-  flickerRange: 0.5
-  angerColor: {r: 1, g: 0, b: 0, a: 1}
-  happinessColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  regretColor: {r: 0, g: 0, b: 1, a: 1}
-  angerThreshold: 0.7
-  happinessThreshold: 0.7
-  regretThreshold: 0.7
-  suspicionThreshold: 0.7
-  useBlendedColor: 0

@@ -1,40 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace Managers
 {
-    [SerializeField]
-    private bool vrEnabled;
-
-    [SerializeField]
-    GameObject vrController;
-    
-    [SerializeField]
-    GameObject defaultController;
-    
-    [SerializeField]
-    GameObject spawnPoint;
-
-    public void Initialize()
+    public class GameManager : MonoBehaviour
     {
+        [SerializeField] private LightManager lightManager; // or find dynamically
+        [SerializeField] private MemoryManager memoryManager;
         
-    }
-    
-    
-    void Start()
-    {
-        vrEnabled = false;
-    }
+        private ILightManager _lightManager;
+        private IMemoryManager _memoryManager;
 
-    // Update is called once per frame
-    void Update()
-    {   
-        vrController.SetActive(vrEnabled);
-        defaultController.SetActive(!vrEnabled);
+        private async void Start()
+        {
+            _lightManager = lightManager;
+            _memoryManager = memoryManager;
+            
+            
+            //lighting abstractions 
+            var lightProvider = new SceneLightProvider();
+            var emotionResolver = new EmotionColorResolver(
+                angerThreshold: 0.7f, happinessThreshold: 0.7f, regretThreshold: 0.7f,
+                angerColor: Color.red, happinessColor: Color.yellow, regretColor: Color.blue
+            );
+            var transitionEffect = new LightTransitionEffect(lightProvider, transitionSpeed: 2f, intensityMultiplier: 1f);
+            var flickerEffect = new LightFlickerEffect(lightProvider, flickerRange: 0.5f, timeBetweenIntensity: 0.1f);
+
+
+
+            await _memoryManager.InitializeAsync();
+            
+            await _lightManager.InitializeAsync(lightProvider, emotionResolver, transitionEffect, flickerEffect);
+            
+            
+            //after initialization
+            SetRoomState();
+        }
+
+        private void SetRoomState()
+        {
+            _memoryManager.RecalculateEmotions();
+        }
     }
-    
-    
-    public Vector3 GetSpawnPoint() => spawnPoint.transform.position;
-    
 }
