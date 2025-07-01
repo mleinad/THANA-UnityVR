@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -14,30 +15,37 @@ namespace Interactions
         [SerializeField] private float searchRadius = 5f;
         [SerializeField] private LayerMask interactableLayer;
         
-        public Transform[] GetRightHandInteractableProximityList()
+        [SerializeField] private List<MeshHighlightVisual> currentList;
+        
+        public MeshHighlightVisual[] GetRightHandInteractableProximityList()
         {
             var array = GetOrderedInteractables(rightHand);
             
-            return array.Length > 0 ? array.Select(x => x.transform).ToArray() : null;
+            return array;
         }
 
-        public Transform[]  GetLeftHandInteractableProximityList()
+        public MeshHighlightVisual[]  GetLeftHandInteractableProximityList()
         {
             var array = GetOrderedInteractables(leftHand);
-            return array.Length > 0 ? array.Select(x => x.transform).ToArray() : null;
+            
+            currentList.Clear();
+            currentList = array.ToList();
+            
+            return array;
         }
         
-        public XRGrabInteractable[] GetOrderedInteractables(Transform hand)
+        public MeshHighlightVisual[] GetOrderedInteractables(Transform hand)
         {
             Collider[] hits = Physics.OverlapSphere(hand.position, searchRadius, interactableLayer);
 
             return hits
-                .Select(hit => hit.GetComponent<XRGrabInteractable>())
+                .Select(hit => hit.GetComponentInParent<MeshHighlightVisual>()) // checks parents too
                 .Where(x => x != null)
+                .Distinct() // optional: avoid duplicates if multiple colliders on the same object
                 .OrderBy(x => Vector3.Distance(hand.position, x.transform.position))
                 .ToArray();
         }
-        
+
         
         /*
         private void OnDrawGizmosSelected()

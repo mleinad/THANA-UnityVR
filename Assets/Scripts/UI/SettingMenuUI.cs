@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -13,12 +14,13 @@ namespace UI
         [SerializeField] private LocomotionSettingsManager locomotionManager;
 
         [Header("UI Elements")]
-        [SerializeField] private Button turnModeButton;
-        [SerializeField] private TMP_Text turnModeButtonText;
+        [SerializeField] private Button teleportButton;
+        [SerializeField] private Button smoothTurn;
 
-        [SerializeField] private Button moveModeButton;
-        [SerializeField] private TMP_Text moveModeButtonText;
+        [SerializeField] private Button continuosButton;
+        [SerializeField] private Button snapTurnButton;
 
+        
         [Header("Facing Settings")]
         [SerializeField] private bool facePlayer = true;
         [SerializeField] private float smoothSpeed = 5f;
@@ -41,11 +43,10 @@ namespace UI
                 return;
             }
 
-            turnModeButton.onClick.AddListener(ToggleTurnMode);
-            moveModeButton.onClick.AddListener(ToggleMoveMode);
+            teleportButton.onClick.AddListener(ToggleTurnMode);
+            smoothTurn.onClick.AddListener(ToggleMoveMode);
 
             playerCamera = Camera.main?.transform;
-            UpdateButtonTexts();
 
             leftTriggerAction.performed += ctx => TryClickHoveredButton(leftRayInteractor);
             rightTriggerAction.performed += ctx => TryClickHoveredButton(rightRayInteractor);
@@ -62,10 +63,7 @@ namespace UI
 
         private void Update()
         {
-            if (facePlayer && playerCamera != null)
-            {
-                FacePlayer();
-            }
+            
         }
 
         private void TryClickHoveredButton(XRRayInteractor interactor)
@@ -83,27 +81,13 @@ namespace UI
         private void ToggleTurnMode()
         {
             locomotionManager.ToggleTurnMode();
-            UpdateButtonTexts();
         }
 
         private void ToggleMoveMode()
         {
             locomotionManager.ToggleMoveMode();
-            UpdateButtonTexts();
         }
-
-        private void UpdateButtonTexts()
-        {
-            string turnText = locomotionManager.CurrentTurnMode == LocomotionSettingsManager.TurnMode.Snap
-                ? "Turn: Snap"
-                : "Turn: Smooth";
-            turnModeButtonText.text = turnText;
-
-            string moveText = locomotionManager.CurrentMoveMode == LocomotionSettingsManager.MoveMode.Teleport
-                ? "Move: Teleport"
-                : "Move: Smooth";
-            moveModeButtonText.text = moveText;
-        }
+        
 
         private void FacePlayer()
         {

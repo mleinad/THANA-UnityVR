@@ -49,10 +49,10 @@ public class LightManager : MonoBehaviour, ILightManager
 
     private void OnEmotionsChanged(EmotionalValue emotions)
     {
-        Debug.Log("Emotional state changed");
 
         Color color = _emotionColorResolver.GetDominantColor(emotions, out float strength);
-        _suspicionMultiplier = emotions.suspicion >= 0.7f ? emotions.suspicion : 0f;
+        
+        _suspicionMultiplier = emotions.suspicion >= 0.3f ? emotions.suspicion : 0f;
 
         _transitionCts?.Cancel();
         _transitionCts = new CancellationTokenSource();

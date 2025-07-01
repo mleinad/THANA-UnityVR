@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables;
 
 namespace Interactions
 {
@@ -13,34 +12,78 @@ namespace Interactions
         private Renderer _renderer;
         private float _originalAlpha;
         private Vector3 _originalScale;
+        
+        
         public bool beenInitialized = false;
 
+        public bool isBeingHeld;
+        
+        private bool inRange;
+        
+        private Color _originalColor;
         public void Initialize()
         {
             if (_highlightCopy != null) return;
-
+            
+            _highlightCopy = null;
             _highlightCopy = new GameObject($"{transform.name}-highlight");
             _highlightCopy.SetActive(false);
 
             MeshFilter meshFilter = _highlightCopy.AddComponent<MeshFilter>();
+            
             _renderer = _highlightCopy.AddComponent<MeshRenderer>();
-
-            meshFilter.mesh = GetComponent<MeshFilter>().mesh;
             _renderer.material = new Material(highlightMaterial);
 
-            _highlightCopy.transform.SetPositionAndRotation(transform.position, transform.rotation);
-            _highlightCopy.transform.localScale = transform.localScale * (1f + scaleFactor);
-            _highlightCopy.transform.SetParent(transform);
+            MeshFilter localMesh = transform.GetComponent<MeshFilter>();
 
-            _originalAlpha = _renderer.material.color.a;
-            _originalScale = _highlightCopy.transform.localScale;
 
-            beenInitialized = true;
+            Transform copyParent = null;
+            
+            if (localMesh != null) //has mesh
+            {
+                meshFilter.mesh = localMesh.mesh;
+                copyParent = transform;
+            }
+            else
+            {
+                ObjectSwap swapper = transform.GetChild(0).GetComponent<ObjectSwap>();
+                if (swapper != null)
+                {
+                    GameObject obj = swapper.GetCurrentGameObject();
+                    meshFilter.mesh = obj.GetComponent<MeshFilter>().mesh;
+                    ObjectSwap.OnAnySelectionChanged += ReInitialize;
+                    copyParent = obj.transform;
+                }
+                else
+                {
+                    Debug.LogError($"Could not find MeshFilter for {transform.name}");
+                }
+            }
+
+            if (copyParent != null)
+            {
+                _highlightCopy.transform.SetPositionAndRotation(copyParent.position, copyParent.rotation);
+                _highlightCopy.transform.localScale = copyParent.localScale * (1f + scaleFactor);
+                _highlightCopy.transform.SetParent(copyParent);
+
+                _originalAlpha = _renderer.material.color.a;
+                _originalScale = _highlightCopy.transform.localScale;
+                beenInitialized = true;
+            }
+            else
+            {
+                Debug.LogError($"Could not find MeshFilter for {transform.name}");
+            }
+            
+            _originalColor = _renderer.material.color;
         }
 
         public void UpdateVisual(float priority)
         {
             this.priority = priority;
+            
+            if(inRange) return;
+            
             SetOpacity();
             SetScale();
         }
@@ -59,5 +102,39 @@ namespace Interactions
 
         public void Show() => _highlightCopy.SetActive(true);
         public void Hide() => _highlightCopy.SetActive(false);
+        
+        public void ReInitialize()
+        {
+            // Destroy the old highlight copy if it exists
+            if (_highlightCopy != null)
+            {
+                Destroy(_highlightCopy);
+                _highlightCopy = null;
+                beenInitialized = false;
+            }
+            
+            ObjectSwap.OnAnySelectionChanged -= ReInitialize;
+
+            Initialize();
+        }
+
+
+        public void SetInRange(bool state)
+        {
+
+            inRange = state;
+            Color color = Color.yellow;
+            color.a = _originalAlpha * priority;
+            
+            if (state)
+            {
+                _renderer.material.color = color;
+            }
+            else
+            {
+                _renderer.material.color = _originalColor;
+            }
+        }
+        
     }
 }

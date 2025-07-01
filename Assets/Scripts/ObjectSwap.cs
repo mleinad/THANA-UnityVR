@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Interactions;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 
 public class ObjectSwap : MonoBehaviour, IMemoryModifier
@@ -11,20 +13,29 @@ public class ObjectSwap : MonoBehaviour, IMemoryModifier
         
         public static event Action OnAnySelectionChanged;
 
+        public MeshHighlightVisual highlighter;
+
         public int selectedIndex;
+        
         private void Awake()
         {
             alternatives.Clear();
-          
+            int i = 0;
             foreach (Transform child in transform)
             {
                 var altComponent = child.GetComponent<AlternativeMemoryObject>();
                 if (altComponent != null)
                 {
                     altComponent.variant = child.gameObject; // Assign the child as the variant
-                    if(altComponent.isDefault) altComponent.Activate(); else altComponent.Deactivate();
+                    if(altComponent.isDefault)
+                    {
+                        altComponent.Activate();
+                        selectedIndex = i;
+                    } else altComponent.Deactivate();
                     alternatives.Add(altComponent);
                 }
+
+                i++;
             }
         }
 
@@ -87,5 +98,8 @@ public class ObjectSwap : MonoBehaviour, IMemoryModifier
             ActivateVariant(selectedIndex);
         }
 
-        
+       public GameObject GetCurrentGameObject()
+        {
+            return alternatives[selectedIndex].variant;
+        }
     }

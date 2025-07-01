@@ -9,8 +9,9 @@ namespace Managers
 {
     public class MemoryManager : MonoBehaviour, IMemoryManager
     {
-        [RequireInterface(typeof(IMemoryModifier))]
-        public List<UnityEngine.Object> memoryModifiers;
+
+        
+        public List<IMemoryModifier> memoryModifiers = new List<IMemoryModifier>();
 
 
         [Header("Current Emotional Status")]
@@ -42,6 +43,9 @@ namespace Managers
             Instance = this;
             CurrentEmotions.Empty();
             _sceneEmotionalValue.Empty();
+            
+            memoryModifiers.Clear();
+            memoryModifiers.AddRange(await FindAllMemoryModifiersInLayerAsync("Interactable"));
 
             ObjectSwap.OnAnySelectionChanged += RecalculateEmotions;
             DisturbDetection.OnDisturbDetected += OnDisturbDetected;
@@ -51,7 +55,7 @@ namespace Managers
         }
         public void RecalculateEmotions()
         {
-            Debug.Log("RecalculateEmotions...");
+            //Debug.Log("RecalculateEmotions...");
             if (memoryModifiers == null || memoryModifiers.Count == 0) return;
 
             EmotionalValue regularTotal = new EmotionalValue();
@@ -98,6 +102,38 @@ namespace Managers
                     Debug.Log("Losing condition triggered: Suspicion too high!");
                 }
             }
+        }
+        
+        
+        
+        
+        
+        private async UniTask<List<IMemoryModifier>> FindAllMemoryModifiersInLayerAsync(string layerName)
+        {
+            int targetLayer = LayerMask.NameToLayer(layerName);
+            var foundModifiers = new List<IMemoryModifier>();
+            
+            Debug.Log("looking for memory modifiers...");
+            
+            
+           // await UniTask.SwitchToThreadPool();
+
+            foreach (var go in GameObject.FindObjectsOfType<GameObject>(true)) // include inactive
+            {
+                if (go.layer == targetLayer)
+                {
+                    var components = go.GetComponents<IMemoryModifier>();
+                    if (components != null && components.Length > 0)
+                    {
+                        foundModifiers.AddRange(components);
+                    }
+                }
+            }
+            
+            Debug.Log($"found {foundModifiers.Count} memory modifiers");
+            
+          //  await UniTask.SwitchToMainThread();
+            return foundModifiers;
         }
         
     }

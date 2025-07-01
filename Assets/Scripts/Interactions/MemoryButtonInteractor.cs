@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Interactions;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -6,48 +7,147 @@ namespace Managers
 {
     public class MemoryButtonInteractor : MonoBehaviour
     {
-        [Header("Controller Inputs")] [SerializeField]
-        private InputActionReference buttonUp; // A (or X)
+        [Header("Controller Inputs")]
+        [SerializeField] private InputActionReference buttonUpL;    // Left controller up button
+        [SerializeField] private InputActionReference buttonDownL;  // Left controller down button
+        
+        [SerializeField] private InputActionReference buttonUpR;    // Right controller up button
+        [SerializeField] private InputActionReference buttonDownR;  // Right controller down button
 
-        [SerializeField] private InputActionReference buttonDown; // B (or Y)
+        [Header("XR Setup")] 
+        [SerializeField] private XRDirectInteractor interactorL;
+        [SerializeField] private XRDirectInteractor interactorR;
 
-        [Header("XR Setup")] [SerializeField] private XRDirectInteractor interactor;
-
-        void OnEnable()
+        private Transform _currentlyHoldingTransform;
+        private void OnEnable()
         {
-            buttonUp.action.Enable();
-            buttonDown.action.Enable();
+            buttonUpL.action.Enable();
+            buttonDownL.action.Enable();
+            buttonUpR.action.Enable();
+            buttonDownR.action.Enable();
 
-            buttonUp.action.performed += OnUpPressed;
-            buttonDown.action.performed += OnDownPressed;
+            buttonUpL.action.performed += OnUpPressedLeft;
+            buttonDownL.action.performed += OnDownPressedLeft;
+            buttonUpR.action.performed += OnUpPressedRight;
+            buttonDownR.action.performed += OnDownPressedRight;
+
+            interactorL.selectEntered.AddListener(OnGrabbedObject);
+            interactorR.selectEntered.AddListener(OnGrabbedObject);
+            
+            interactorL.hoverEntered.AddListener(OnHoverEnter);
+            interactorR.hoverEntered.AddListener(OnHoverEnter);
+            
+            interactorL.hoverExited.AddListener(OnHoverExit);
+            interactorR.hoverExited.AddListener(OnHoverExit);
+
+            
+            
+            interactorL.selectExited.AddListener(OnReleasedObject);
+            interactorR.selectExited.AddListener(OnReleasedObject);
+
         }
 
-        void OnDisable()
-        {
-            buttonUp.action.Disable();
-            buttonDown.action.Disable();
 
-            buttonUp.action.performed -= OnUpPressed;
-            buttonDown.action.performed -= OnDownPressed;
+        private void OnDisable()
+        {
+            buttonUpL.action.performed -= OnUpPressedLeft;
+            buttonDownL.action.performed -= OnDownPressedLeft;
+            buttonUpR.action.performed -= OnUpPressedRight;
+            buttonDownR.action.performed -= OnDownPressedRight;
+
+            buttonUpL.action.Disable();
+            buttonDownL.action.Disable();
+            buttonUpR.action.Disable();
+            buttonDownR.action.Disable();
+            
+            interactorR.selectEntered.RemoveListener(OnGrabbedObject);
+            interactorL.selectEntered.RemoveListener(OnGrabbedObject);
+            
+            
+            interactorL.selectExited.RemoveListener(OnReleasedObject);
+            interactorR.selectExited.RemoveListener(OnReleasedObject);
+            
+            
+            interactorL.hoverEntered.RemoveListener(OnHoverEnter);
+            interactorR.hoverEntered.AddListener(OnHoverEnter);
+            
+            interactorL.hoverExited.RemoveListener(OnHoverExit);
+            interactorR.hoverExited.RemoveListener(OnHoverExit);
+
+        }
+        
+        
+        
+        
+        private void OnGrabbedObject(SelectEnterEventArgs args)
+        {
+            _currentlyHoldingTransform = args.interactableObject.transform;
+            TryDisableHighlight();
+        }
+        
+        private void OnReleasedObject(SelectExitEventArgs args)
+        {
+            _currentlyHoldingTransform = args.interactableObject.transform;
+            TryDisableHighlight(true);
+            _currentlyHoldingTransform = null;
+            
         }
 
-        private void OnUpPressed(InputAction.CallbackContext ctx)
+
+        private void OnHoverEnter(HoverEnterEventArgs args)
         {
-            TrySwitchVariant(+1);
+            var mv = args.interactableObject.transform.GetComponent<MeshHighlightVisual>();
+         
+            if(mv.isBeingHeld) return;
+            
+            mv.Show();
+            mv.SetInRange(true);
         }
 
-        private void OnDownPressed(InputAction.CallbackContext ctx)
+        private void OnHoverExit(HoverExitEventArgs args)
         {
-            TrySwitchVariant(-1);
+            var mv = args.interactableObject.transform.GetComponent<MeshHighlightVisual>();
+            mv.SetInRange(false);
+        }
+        
+        
+        void TryDisableHighlight(bool force = false)
+        {
+             var mv =  _currentlyHoldingTransform.GetComponent<MeshHighlightVisual>();
+             if (mv != null)
+             {
+                 mv.isBeingHeld = !force;
+             }
+        }
+        
+
+        private void OnUpPressedLeft(InputAction.CallbackContext ctx)
+        {
+            TrySwitchVariant(interactorL, +1);
         }
 
-        private void TrySwitchVariant(int direction)
+        private void OnDownPressedLeft(InputAction.CallbackContext ctx)
+        {
+            TrySwitchVariant(interactorL, -1);
+        }
+
+        private void OnUpPressedRight(InputAction.CallbackContext ctx)
+        {
+            TrySwitchVariant(interactorR, +1);
+        }
+
+        private void OnDownPressedRight(InputAction.CallbackContext ctx)
+        {
+            TrySwitchVariant(interactorR, -1);
+        }
+
+        private void TrySwitchVariant(XRDirectInteractor interactor, int direction)
         {
             if (interactor.hasSelection)
             {
                 var heldObject = interactor.GetOldestInteractableSelected();
                 if (heldObject == null) return;
-             
+
                 var swapper = heldObject.transform.GetComponentInChildren<ObjectSwap>();
                 if (swapper != null)
                 {
@@ -55,5 +155,7 @@ namespace Managers
                 }
             }
         }
+        
+        
     }
 }
