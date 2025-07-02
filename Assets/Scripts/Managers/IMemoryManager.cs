@@ -5,4 +5,6 @@ public interface IMemoryManager
         UniTask InitializeAsync();
 
         public void RecalculateEmotions();
+
+        public EmotionalValue GetFinalValue();
 }

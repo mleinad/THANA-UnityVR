@@ -103,9 +103,9 @@ namespace Managers
                 }
             }
         }
-        
-        
-        
+
+
+        public EmotionalValue GetFinalValue() => CurrentEmotions;
         
         
         private async UniTask<List<IMemoryModifier>> FindAllMemoryModifiersInLayerAsync(string layerName)

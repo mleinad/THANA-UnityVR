@@ -1,6 +1,9 @@
 using System;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MemoryLogic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace Managers
@@ -10,17 +13,29 @@ namespace Managers
         [SerializeField] private LightManager lightManager; // or find dynamically
         [SerializeField] private MemoryManager memoryManager;
         [SerializeField] private GameObject city;
-
+        [SerializeField] private GameObject text;
         private ILightManager _lightManager;
         private IMemoryManager _memoryManager;
+        
+        [Header("Exit Game Button")]
+        [SerializeField] private InputActionReference menuButton;
 
         private bool c;
         private async void Start()
         {
             _lightManager = lightManager;
             _memoryManager = memoryManager;
-            
-            MemoryResultData.Instance.SetEnding(1);
+
+            if (MemoryResultData.Instance != null)
+            {
+                //MemoryResultData.Instance.SetEnding(1);
+            }
+            else
+            {
+                GameObject gameObj = new GameObject("memoryManagerRuntime");
+                gameObj.AddComponent<MemoryResultData>();
+                MemoryResultData.Instance.BeenLoaded = true;
+            }
             
             //lighting abstractions 
             var lightProvider = new SceneLightProvider();
@@ -31,7 +46,7 @@ namespace Managers
             var transitionEffect = new LightTransitionEffect(lightProvider, transitionSpeed: 2f, intensityMultiplier: 1f);
             var flickerEffect = new LightFlickerEffect(lightProvider, flickerRange: 0.5f, timeBetweenIntensity: 0.1f);
 
-
+            text.SetActive(false);
 
             await _memoryManager.InitializeAsync();
             
@@ -40,6 +55,11 @@ namespace Managers
             
             //after initialization
             SetRoomState();
+        }
+
+        private void OnEnable()
+        {
+            menuButton.action.performed += TriggerEnding;
         }
 
         private void OnTriggerEnter(Collider other)
@@ -54,6 +74,33 @@ namespace Managers
         private void SetRoomState()
         {
             _memoryManager.RecalculateEmotions();
+        }
+
+        void OnDisable()
+        {
+            menuButton.action.performed -= TriggerEnding;
+        }
+
+        void TriggerEnding(InputAction.CallbackContext context)
+        {
+            _= DelayedEnding();
+        }
+
+        private async Task DelayedEnding()
+        {
+            
+            text.SetActive(true);
+            await UniTask.Delay(TimeSpan.FromSeconds(3));
+
+            int emotion = _memoryManager.GetFinalValue().GetDominantEmotion();
+
+
+            if (MemoryResultData.Instance != null)
+            {
+                MemoryResultData.Instance.SetEnding(emotion);
+            }
+
+            SceneManager.LoadScene("Intro");
         }
     }
 }
