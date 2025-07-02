@@ -49,16 +49,17 @@ public class LightManager : MonoBehaviour, ILightManager
 
     private void OnEmotionsChanged(EmotionalValue emotions)
     {
-
         Color color = _emotionColorResolver.GetDominantColor(emotions, out float strength);
-        
+
         _suspicionMultiplier = emotions.suspicion >= 0.3f ? emotions.suspicion : 0f;
 
         _transitionCts?.Cancel();
         _transitionCts = new CancellationTokenSource();
 
-        _transitionEffect.SmoothTransitionAsync(color, strength, _transitionCts.Token).Forget();
+        float emphasizedStrength = Mathf.Clamp01(strength * 1.5f); // Boost color strength
+        _transitionEffect.SmoothTransitionAsync(color, emphasizedStrength, _transitionCts.Token).Forget();
     }
+
 
     #endregion
 

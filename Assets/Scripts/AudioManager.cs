@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Managers;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class SoundManager : MonoBehaviour
 {
@@ -15,13 +14,17 @@ public class SoundManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float volumeMultiplier = 1f;
     [SerializeField] private float fadeSpeed = 1f;
 
-    private Dictionary<string, AudioSource> emotionSources = new();
-    private float targetSuspiciousVol, targetHappinessVol, targetRegretVol;
+    private enum Emotion { Suspicion, Happiness, Regret, None }
+
+    private Dictionary<Emotion, AudioSource> emotionSources = new();
+    private Emotion currentDominant = Emotion.None;
+    private Emotion previousDominant = Emotion.None;
 
     private void Awake()
     {
-        CreateAudioSources();
-        StartAllLoops();
+        emotionSources[Emotion.Suspicion] = CreateLoopingSource(suspiciousClip);
+        emotionSources[Emotion.Happiness] = CreateLoopingSource(happinessClip);
+        emotionSources[Emotion.Regret] = CreateLoopingSource(regretClip);
     }
 
     private async void Start()
@@ -38,14 +41,7 @@ public class SoundManager : MonoBehaviour
 
     private void Update()
     {
-        BlendVolumes();
-    }
-
-    private void CreateAudioSources()
-    {
-        emotionSources["suspicious"] = CreateLoopingSource(suspiciousClip);
-        emotionSources["happiness"] = CreateLoopingSource(happinessClip);
-        emotionSources["regret"] = CreateLoopingSource(regretClip);
+        UpdateVolumes();
     }
 
     private AudioSource CreateLoopingSource(AudioClip clip)
@@ -56,39 +52,42 @@ public class SoundManager : MonoBehaviour
         source.volume = 0f;
         source.playOnAwake = false;
         source.spatialBlend = 0f;
+        if (clip != null)
+            source.Play();
         return source;
-    }
-
-    private void StartAllLoops()
-    {
-        foreach (var src in emotionSources.Values)
-        {
-            if (src.clip != null)
-                src.Play();
-        }
     }
 
     private void OnEmotionsChanged(EmotionalValue emotions)
     {
-        // Normalize emotional weights (focus on dominant blend)
-        float total = emotions.suspicion + emotions.happiness + emotions.regret;
+        // Determine the dominant emotion
+        float suspicion = emotions.suspicion;
+        float happiness = emotions.happiness;
+        float regret = emotions.regret;
 
-        if (total > 0f)
-        {
-            targetSuspiciousVol = (emotions.suspicion / total) * volumeMultiplier;
-            targetHappinessVol = (emotions.happiness / total) * volumeMultiplier;
-            targetRegretVol = (emotions.regret / total) * volumeMultiplier;
-        }
-        else
-        {
-            targetSuspiciousVol = targetHappinessVol = targetRegretVol = 0f;
-        }
+        currentDominant = GetDominantEmotion(suspicion, happiness, regret);
     }
 
-    private void BlendVolumes()
+    private Emotion GetDominantEmotion(float suspicion, float happiness, float regret)
     {
-        emotionSources["suspicious"].volume = Mathf.MoveTowards(emotionSources["suspicious"].volume, targetSuspiciousVol, fadeSpeed * Time.deltaTime);
-        emotionSources["happiness"].volume = Mathf.MoveTowards(emotionSources["happiness"].volume, targetHappinessVol, fadeSpeed * Time.deltaTime);
-        emotionSources["regret"].volume = Mathf.MoveTowards(emotionSources["regret"].volume, targetRegretVol, fadeSpeed * Time.deltaTime);
+        if (suspicion <= 0f && happiness <= 0f && regret <= 0f)
+            return Emotion.None;
+
+        if (suspicion >= happiness && suspicion >= regret)
+            return Emotion.Suspicion;
+        if (happiness >= suspicion && happiness >= regret)
+            return Emotion.Happiness;
+        return Emotion.Regret;
+    }
+
+    private void UpdateVolumes()
+    {
+        foreach (var pair in emotionSources)
+        {
+            var emotion = pair.Key;
+            var source = pair.Value;
+
+            float targetVol = (emotion == currentDominant) ? volumeMultiplier : 0f;
+            source.volume = Mathf.MoveTowards(source.volume, targetVol, fadeSpeed * Time.deltaTime);
+        }
     }
 }

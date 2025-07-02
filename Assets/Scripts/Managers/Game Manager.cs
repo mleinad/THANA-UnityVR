@@ -44,7 +44,7 @@ namespace Managers
                 angerColor: Color.red, happinessColor: Color.yellow, regretColor: Color.blue
             );
             var transitionEffect = new LightTransitionEffect(lightProvider, transitionSpeed: 2f, intensityMultiplier: 1f);
-            var flickerEffect = new LightFlickerEffect(lightProvider, flickerRange: 0.5f, timeBetweenIntensity: 0.1f);
+            var flickerEffect = new LightFlickerEffect(lightProvider);
 
             text.SetActive(false);
 

@@ -8350,13 +8350,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23f4a0266c9146941b2817ae07ef3f76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  suspiciousThreshold: 0
-  npcs: []
-  player: {fileID: 0}
-  targetObject: {fileID: 1269976262}
-  headAimConstraint: {fileID: 0}
-  neckAimConstraint: {fileID: 0}
-  weightLerpSpeed: 2
 --- !u!4 &1010511127
 Transform:
   m_ObjectHideFlags: 0
@@ -8827,7 +8820,7 @@ PrefabInstance:
     - target: {fileID: 6598815579406187037, guid: 18ddb545287c546e19cc77dc9fbb2189,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9445,6 +9438,55 @@ LightingSettings:
   m_PVRTiledBaking: 0
   m_NumRaysToShootPerTexel: -1
   m_RespectSceneVisibilityWhenBakingGI: 0
+--- !u!1 &1240705350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1240705351}
+  - component: {fileID: 1240705352}
+  m_Layer: 0
+  m_Name: Sound Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1240705351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240705350}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1248169678}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1240705352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240705350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f82709f34e00b9441a99ac0443362b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  suspiciousClip: {fileID: 8300000, guid: 321ddf125f3eb3b409208105c5008aa7, type: 3}
+  happinessClip: {fileID: 8300000, guid: 4961f67aab32fdf45ae1a9d41cf3b2f8, type: 3}
+  regretClip: {fileID: 8300000, guid: bc3cf7e9a1db7fb44b0e6c55dd47a92c, type: 3}
+  volumeMultiplier: 1
+  fadeSpeed: 1
 --- !u!1 &1248169677
 GameObject:
   m_ObjectHideFlags: 0
@@ -9480,6 +9522,7 @@ Transform:
   - {fileID: 1684266337}
   - {fileID: 1766859431}
   - {fileID: 1827201944}
+  - {fileID: 1240705351}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1252154063
@@ -13452,6 +13495,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 4048736897328987695, guid: af7013192679420439841cda59b5117e,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 4355167f6704bb842a15f6c523c298fa, type: 2}
     - target: {fileID: 4113544248304029934, guid: af7013192679420439841cda59b5117e,
         type: 3}
       propertyPath: m_Layer
@@ -14920,6 +14968,11 @@ PrefabInstance:
     - target: {fileID: 4218807063060061080, guid: eabe57e7b90f03947b68b4c6995cdbfe,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4365554277836351947, guid: eabe57e7b90f03947b68b4c6995cdbfe,
+        type: 3}
+      propertyPath: suspicionThreshold
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4365554277836351947, guid: eabe57e7b90f03947b68b4c6995cdbfe,
@@ -25215,7 +25268,7 @@ MonoBehaviour:
     happiness: 0.313
     regret: 0.931
   isDefault: 0
-  _isSelected: 1
+  _isSelected: 0
 --- !u!114 &5585557755495322265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25711,7 +25764,7 @@ PrefabInstance:
     - target: {fileID: 7363654172484134686, guid: 12ca6ef9b894eff4d80c25beac6c0975,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.581
+      value: -0.16899991
       objectReference: {fileID: 0}
     - target: {fileID: 7363654172484134686, guid: 12ca6ef9b894eff4d80c25beac6c0975,
         type: 3}
@@ -25721,7 +25774,7 @@ PrefabInstance:
     - target: {fileID: 7363654172484134686, guid: 12ca6ef9b894eff4d80c25beac6c0975,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.64
+      value: -3.14
       objectReference: {fileID: 0}
     - target: {fileID: 7363654172484134686, guid: 12ca6ef9b894eff4d80c25beac6c0975,
         type: 3}

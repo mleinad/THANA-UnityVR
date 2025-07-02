@@ -5,10 +5,9 @@ public class LightFlickerEffect : ILightFlickerEffect
     private readonly ISceneLightProvider _lightProvider;
     private readonly float _flickerRange;
     private readonly float _timeBetweenIntensity;
-
     private float _timer;
 
-    public LightFlickerEffect(ISceneLightProvider provider, float flickerRange, float timeBetweenIntensity)
+    public LightFlickerEffect(ISceneLightProvider provider, float flickerRange = 0.4f, float timeBetweenIntensity = 0.05f)
     {
         _lightProvider = provider;
         _flickerRange = flickerRange;
@@ -27,9 +26,8 @@ public class LightFlickerEffect : ILightFlickerEffect
         for (int i = 0; i < lights.Count; i++)
         {
             float baseIntensity = intensities[i];
-            float min = Mathf.Max(0f, baseIntensity - (scaledRange * baseIntensity));
-            float max = baseIntensity + (scaledRange * baseIntensity);
-            lights[i].intensity = Random.Range(min, max);
+            float flickerOffset = Random.Range(-scaledRange, scaledRange);
+            lights[i].intensity = Mathf.Max(0f, baseIntensity + flickerOffset);
         }
 
         _timer = 0f;
