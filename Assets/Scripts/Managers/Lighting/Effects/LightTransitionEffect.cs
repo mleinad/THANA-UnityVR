@@ -21,36 +21,20 @@ public class LightTransitionEffect : ILightTransitionEffect
         var baseColors = _lightProvider.OriginalColors;
         var baseIntensities = _lightProvider.OriginalIntensities;
 
-        float t = 0f;
-
-        while (t < 1f && !token.IsCancellationRequested)
+        while (!token.IsCancellationRequested)
         {
-            t += Time.deltaTime * _transitionSpeed;
-
             for (int i = 0; i < lights.Count; i++)
             {
-                var baseColor = baseColors[i];
-                var baseIntensity = baseIntensities[i];
+                var light = lights[i];
 
-                var addedColor = emotionColor * strength * _intensityMultiplier;
-                var targetColor = ClampColor(baseColor + addedColor);
-                var targetIntensity = baseIntensity * Mathf.Lerp(0.7f, 1.3f, strength);
+                Color targetColor = Color.Lerp(baseColors[i], emotionColor, strength);
+                //float targetIntensity = Mathf.Lerp(baseIntensities[i], baseIntensities[i] * _intensityMultiplier, strength);
 
-                lights[i].color = Color.Lerp(lights[i].color, targetColor, t);
-                lights[i].intensity = Mathf.Lerp(lights[i].intensity, targetIntensity, t);
+                light.color = Color.Lerp(light.color, targetColor, Time.deltaTime * _transitionSpeed);
+               // light.intensity = Mathf.Lerp(light.intensity, baseIntensities[i], Time.deltaTime * _transitionSpeed);
             }
 
             await UniTask.Yield(PlayerLoopTiming.Update, token);
         }
-    }
-
-    private static Color ClampColor(Color color)
-    {
-        return new Color(
-            Mathf.Clamp01(color.r),
-            Mathf.Clamp01(color.g),
-            Mathf.Clamp01(color.b),
-            1f
-        );
     }
 }

@@ -4,12 +4,13 @@ using AYellowpaper;
 using Cysharp.Threading.Tasks;
 using Interactions;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Managers
 {
     public class MemoryManager : MonoBehaviour, IMemoryManager
     {
-
+        [SerializeField] public List<GameObject> emotionalSliders;
         
         public List<IMemoryModifier> memoryModifiers = new List<IMemoryModifier>();
 
@@ -22,6 +23,10 @@ namespace Managers
         [SerializeField, Range(0f, 1f)] private float _regret;
         [SerializeField, Range(0f, 1f)] private float suspicionThreshold = 0.8f;
         
+        [SerializeField] private Slider angerSlider;
+        [SerializeField] private Slider suspicionSlider;
+        [SerializeField] private Slider happinessSlider;
+        [SerializeField] private Slider regretSlider;
 
         public event Action<EmotionalValue> EmotionalStateChanged;
 
@@ -53,6 +58,7 @@ namespace Managers
             RecalculateEmotions();
             Debug.Log("Memory Manager initialized...");
         }
+
         public void RecalculateEmotions()
         {
             //Debug.Log("RecalculateEmotions...");
@@ -87,6 +93,13 @@ namespace Managers
             _suspicion =     CurrentEmotions.suspicion;
             _happiness =     CurrentEmotions.happiness;
             _regret    =     CurrentEmotions.regret;
+            
+            angerSlider.value     = _anger;
+            suspicionSlider.value = _suspicion;
+            happinessSlider.value = _happiness;
+            regretSlider.value    = _regret;
+            
+            Debug.Log($"Dominant emotion-> {CurrentEmotions.GetDominantEmotion()}");
         }
         private void OnDisturbDetected(GameObject disturbedObject)
         {
@@ -103,10 +116,8 @@ namespace Managers
                 }
             }
         }
-
-
-        public EmotionalValue GetFinalValue() => CurrentEmotions;
         
+        public EmotionalValue GetFinalValue() => CurrentEmotions;
         
         private async UniTask<List<IMemoryModifier>> FindAllMemoryModifiersInLayerAsync(string layerName)
         {

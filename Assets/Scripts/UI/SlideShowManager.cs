@@ -26,37 +26,49 @@ public class SlideShowManager : MonoBehaviour
         private int currentIndex = 0;
         void OnEnable()
         {
-                ActivateSlide(currentIndex);
-               buttonUpL.action.performed += PageUp;
-               buttonDownL.action.performed += PageDown;
-               
-               buttonUpR.action.performed += PageUp;
-               buttonDownR.action.performed += PageDown;
-               text.SetActive(false);
+            buttonUpL.action.Enable();
+            buttonDownL.action.Enable();
+            buttonUpR.action.Enable();
+            buttonDownR.action.Enable();
+    
+            buttonUpL.action.performed += PageUp;
+            buttonDownL.action.performed += PageDown;
+            buttonUpR.action.performed += PageUp;
+            buttonDownR.action.performed += PageDown;
+
+            ActivateSlide(currentIndex);
+            text.SetActive(false);
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
-                
             buttonUpL.action.performed -= PageUp;
             buttonDownL.action.performed -= PageDown;
-               
             buttonUpR.action.performed -= PageUp;
             buttonDownR.action.performed -= PageDown;
+    
+            buttonUpL.action.Disable();
+            buttonDownL.action.Disable();
+            buttonUpR.action.Disable();
+            buttonDownR.action.Disable();
         }
+
 
         void PageUp(InputAction.CallbackContext ctx)
         {
-            currentIndex++;
-            ActivateSlide(currentIndex);
-
-            if (currentIndex > slideShows.Count)
+            if (currentIndex < slideShows.Count - 1)
             {
+                currentIndex++;
+                ActivateSlide(currentIndex);
+            }
+            else if (currentIndex == slideShows.Count - 1)
+            {
+                currentIndex++;
                 text.SetActive(true);
-                
-                _ = LoadSceneWithDelayAsync(); // Fire-and-forget
+                _ = LoadSceneWithDelayAsync();
             }
         }
+
 
         private async UniTaskVoid LoadSceneWithDelayAsync()
         {
@@ -78,9 +90,16 @@ public class SlideShowManager : MonoBehaviour
         }
         void PageDown(InputAction.CallbackContext ctx)
         {
-                currentIndex--;
-                if(currentIndex < 0)
-                    ActivateSlide(currentIndex);
+            currentIndex--;
+            if (currentIndex >= 0 && currentIndex < slideShows.Count)
+            {
+                text.SetActive(false); // Hide again
+                ActivateSlide(currentIndex);
+            }
+            else
+            {
+                currentIndex = Mathf.Clamp(currentIndex, 0, slideShows.Count - 1);
+            }
         }
 
 
@@ -88,7 +107,7 @@ public class SlideShowManager : MonoBehaviour
         {
             for (int j = 0; j < slideShows.Count; j++)
             {
-                slideShows[j].SetActive(i == j);
+                slideShows[j].SetActive(j == i);
             }
         }
 }

@@ -10,7 +10,7 @@ public class EmotionalValue
     [Range(0f,1f)] public float regret;
     
 
-    public int GetDominantEmotion()
+    public int GetDominantEnding()
     {
         // Find the max value among the four
         float maxValue = Mathf.Max(happiness, suspicion, regret, anger);
@@ -23,7 +23,26 @@ public class EmotionalValue
             return 2; // sad or anger
 
         // fallback, should not happen if values are valid
-        return -1;    }
+        return -1;    
+    }
+    
+    
+    
+    public int GetDominantEmotion()
+    {
+        // Find the max value among the four
+        float maxValue = Mathf.Max(happiness, regret, anger);
+
+        if (Mathf.Approximately(maxValue, happiness))
+            return 0; // happy
+        else if (Mathf.Approximately(maxValue, anger))
+            return 1; // anger
+        else if (Mathf.Approximately(maxValue, regret))
+            return 2; // sad
+
+        
+        return -1;    
+    }
     
     public static EmotionalValue operator + (EmotionalValue a, EmotionalValue b)
     {

@@ -100,9 +100,16 @@ namespace Interactions
             _highlightCopy.transform.localScale = _originalScale * (priority);
         }
 
-        public void Show() => _highlightCopy.SetActive(true);
-        public void Hide() => _highlightCopy.SetActive(false);
-        
+        public void Show()
+        {
+            if (_highlightCopy != null) _highlightCopy.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            if (_highlightCopy != null) _highlightCopy.SetActive(true);
+        }
+
         public void ReInitialize()
         {
             // Destroy the old highlight copy if it exists
@@ -125,14 +132,9 @@ namespace Interactions
             inRange = state;
             Color color = Color.yellow;
             color.a = _originalAlpha * priority;
-            
-            if (state)
+            if (_renderer != null)
             {
-                _renderer.material.color = color;
-            }
-            else
-            {
-                _renderer.material.color = _originalColor;
+                _renderer.material.color = state ? color : _originalColor;
             }
         }
         

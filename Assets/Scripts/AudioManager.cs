@@ -10,21 +10,16 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip happinessClip;
     [SerializeField] private AudioClip regretClip;
 
-    [Header("Audio Settings")]
-    [SerializeField, Range(0f, 1f)] private float volumeMultiplier = 1f;
-    [SerializeField] private float fadeSpeed = 1f;
-
     private enum Emotion { Suspicion, Happiness, Regret, None }
 
     private Dictionary<Emotion, AudioSource> emotionSources = new();
-    private Emotion currentDominant = Emotion.None;
-    private Emotion previousDominant = Emotion.None;
+    private Emotion currentEmotion = Emotion.None;
 
     private void Awake()
     {
-        emotionSources[Emotion.Suspicion] = CreateLoopingSource(suspiciousClip);
-        emotionSources[Emotion.Happiness] = CreateLoopingSource(happinessClip);
-        emotionSources[Emotion.Regret] = CreateLoopingSource(regretClip);
+        emotionSources[Emotion.Suspicion] = CreateSource(suspiciousClip);
+        emotionSources[Emotion.Happiness] = CreateSource(happinessClip);
+        emotionSources[Emotion.Regret] = CreateSource(regretClip);
     }
 
     private async void Start()
@@ -39,55 +34,49 @@ public class SoundManager : MonoBehaviour
             MemoryManager.Instance.EmotionalStateChanged -= OnEmotionsChanged;
     }
 
-    private void Update()
-    {
-        UpdateVolumes();
-    }
-
-    private AudioSource CreateLoopingSource(AudioClip clip)
+    private AudioSource CreateSource(AudioClip clip)
     {
         var source = gameObject.AddComponent<AudioSource>();
         source.clip = clip;
         source.loop = true;
-        source.volume = 0f;
         source.playOnAwake = false;
         source.spatialBlend = 0f;
-        if (clip != null)
-            source.Play();
         return source;
     }
 
     private void OnEmotionsChanged(EmotionalValue emotions)
     {
-        // Determine the dominant emotion
+        Emotion dominant = GetDominantEmotion(emotions);
+
+        if (dominant == currentEmotion) return;
+
+        // Stop current
+        if (emotionSources.TryGetValue(currentEmotion, out var currentSource))
+        {
+            currentSource.Stop();
+        }
+
+        // Play new dominant
+        if (emotionSources.TryGetValue(dominant, out var newSource) && newSource.clip != null)
+        {
+            newSource.Play();
+        }
+
+        currentEmotion = dominant;
+    }
+
+    private Emotion GetDominantEmotion(EmotionalValue emotions)
+    {
         float suspicion = emotions.suspicion;
         float happiness = emotions.happiness;
         float regret = emotions.regret;
 
-        currentDominant = GetDominantEmotion(suspicion, happiness, regret);
-    }
+        float max = Mathf.Max(suspicion, happiness, regret);
 
-    private Emotion GetDominantEmotion(float suspicion, float happiness, float regret)
-    {
-        if (suspicion <= 0f && happiness <= 0f && regret <= 0f)
-            return Emotion.None;
+        if (Mathf.Approximately(max, suspicion)) return Emotion.Suspicion;
+        if (Mathf.Approximately(max, happiness)) return Emotion.Happiness;
+        if (Mathf.Approximately(max, regret)) return Emotion.Regret;
 
-        if (suspicion >= happiness && suspicion >= regret)
-            return Emotion.Suspicion;
-        if (happiness >= suspicion && happiness >= regret)
-            return Emotion.Happiness;
-        return Emotion.Regret;
-    }
-
-    private void UpdateVolumes()
-    {
-        foreach (var pair in emotionSources)
-        {
-            var emotion = pair.Key;
-            var source = pair.Value;
-
-            float targetVol = (emotion == currentDominant) ? volumeMultiplier : 0f;
-            source.volume = Mathf.MoveTowards(source.volume, targetVol, fadeSpeed * Time.deltaTime);
-        }
+        return Emotion.None;
     }
 }

@@ -141,7 +141,9 @@ PlayerSettings:
   tvOSBundleVersion: 1.0
   bundleVersion: 0.1.0
   preloadedAssets:
-  - {fileID: 5441380157009660852, guid: 6f6f5d46ca10c6c4dae2caed68e8af29, type: 2}
+  - {fileID: 7932475664557743408, guid: 6f6f5d46ca10c6c4dae2caed68e8af29, type: 2}
+  - {fileID: 6423883022284155966, guid: b1aa57c6ca4395d41ba50763f0b16f4c, type: 2}
+  - {fileID: 11400000, guid: 04c5109caee6c0d4eb0cb2eb1e2706c0, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -829,7 +831,7 @@ PlayerSettings:
   scriptingBackend:
     Android: 1
     Server: 1
-    Standalone: 1
+    Standalone: 0
   il2cppCompilerConfiguration: {}
   il2cppCodeGeneration: {}
   managedStrippingLevel:

@@ -97,7 +97,7 @@ namespace Managers
         private void OnHoverEnter(HoverEnterEventArgs args)
         {
             var mv = args.interactableObject.transform.GetComponent<MeshHighlightVisual>();
-         
+            if (mv == null) return;
             if(mv.isBeingHeld) return;
             
             mv.Show();
@@ -107,6 +107,7 @@ namespace Managers
         private void OnHoverExit(HoverExitEventArgs args)
         {
             var mv = args.interactableObject.transform.GetComponent<MeshHighlightVisual>();
+            if (mv == null) return;
             mv.SetInRange(false);
         }
         
@@ -114,6 +115,7 @@ namespace Managers
         void TryDisableHighlight(bool force = false)
         {
              var mv =  _currentlyHoldingTransform.GetComponent<MeshHighlightVisual>();
+             if (mv == null) return;
              if (mv != null)
              {
                  mv.isBeingHeld = !force;

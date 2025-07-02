@@ -27,26 +27,20 @@ public class EmotionColorResolver : IEmotionColorResolver
     {
         strength = 0f;
 
-        if (emotions.anger > _angerThreshold &&
-            emotions.anger >= emotions.happiness &&
-            emotions.anger >= emotions.regret)
+        switch (emotions.GetDominantEmotion())
         {
-            strength = emotions.anger;
-            return _angerColor;
-        }
-
-        if (emotions.happiness > _happinessThreshold &&
-            emotions.happiness >= emotions.anger &&
-            emotions.happiness >= emotions.regret)
-        {
-            strength = emotions.happiness;
-            return _happinessColor;
-        }
-
-        if (emotions.regret > _regretThreshold)
-        {
-            strength = emotions.regret;
-            return _regretColor;
+            case 1:
+                strength = emotions.anger;
+                return _angerColor * strength;
+                break;
+            case 2:
+                strength = emotions.regret;
+                return _regretColor * strength;
+                break;
+            case 0:
+                strength = emotions.happiness;
+                return _happinessColor * strength;
+                break;
         }
 
         return Color.black;

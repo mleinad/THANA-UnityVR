@@ -1,4 +1,5 @@
 ﻿using Interactions;
+using MemoryLogic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,94 +11,64 @@ namespace UI
 {
     public class SettingMenuUI : MonoBehaviour
     {
-        [Header("Manager Reference")]
-        [SerializeField] private LocomotionSettingsManager locomotionManager;
-
         [Header("UI Elements")]
         [SerializeField] private Button teleportButton;
-        [SerializeField] private Button smoothTurn;
-
-        [SerializeField] private Button continuosButton;
+        [SerializeField] private Button continuosMoveButton;
+        
+        [SerializeField] private Button smoothTurnButton;
         [SerializeField] private Button snapTurnButton;
 
-        
-        [Header("Facing Settings")]
-        [SerializeField] private bool facePlayer = true;
-        [SerializeField] private float smoothSpeed = 5f;
+        [Header("Colors")]
+        [SerializeField] private Color activeColor = Color.white;
+        [SerializeField] private Color inactiveColor = Color.gray;
 
-        [Header("References")]
-        [SerializeField] private InputAction leftTriggerAction;
-        [SerializeField] private InputAction rightTriggerAction;
-
-        [SerializeField] private XRRayInteractor leftRayInteractor;
-        [SerializeField] private XRRayInteractor rightRayInteractor;
-
-        private Transform playerCamera;
+        private bool snapTurn, teleport;
 
         private void Start()
         {
-            if (locomotionManager == null)
-            {
-                Debug.LogError("LocomotionSettingsManager reference is missing.");
-                enabled = false;
-                return;
-            }
+            teleportButton.onClick.AddListener(EnableTeleportMode);
+            continuosMoveButton.onClick.AddListener(EnableContinuousMoveMode);
+            snapTurnButton.onClick.AddListener(EnableSnapTurnMode);
+            smoothTurnButton.onClick.AddListener(EnableSmoothTurnMode);
 
-            teleportButton.onClick.AddListener(ToggleTurnMode);
-            smoothTurn.onClick.AddListener(ToggleMoveMode);
-
-            playerCamera = Camera.main?.transform;
-
-            leftTriggerAction.performed += ctx => TryClickHoveredButton(leftRayInteractor);
-            rightTriggerAction.performed += ctx => TryClickHoveredButton(rightRayInteractor);
-
-            leftTriggerAction.Enable();
-            rightTriggerAction.Enable();
+            EnableSnapTurnMode();
+            EnableContinuousMoveMode();
         }
 
-        private void OnDestroy()
+        private void EnableTeleportMode()
         {
-            leftTriggerAction.performed -= ctx => TryClickHoveredButton(leftRayInteractor);
-            rightTriggerAction.performed -= ctx => TryClickHoveredButton(rightRayInteractor);
+            SetButtonColors(teleportButton, continuosMoveButton);
+            teleport = true;
+            MemoryResultData.Instance.SetXRSettings(snapTurn, teleport);
         }
 
-        private void Update()
+        private void EnableContinuousMoveMode()
         {
-            
+            SetButtonColors(continuosMoveButton, teleportButton);
+            teleport = false;
+            MemoryResultData.Instance.SetXRSettings(snapTurn, teleport);
         }
 
-        private void TryClickHoveredButton(XRRayInteractor interactor)
+        private void EnableSnapTurnMode()
         {
-            if (interactor.TryGetCurrentUIRaycastResult(out var result))
-            {
-                Button button = result.gameObject.GetComponent<Button>();
-                if (button != null)
-                {
-                    button.onClick.Invoke();
-                }
-            }
+            SetButtonColors(snapTurnButton, smoothTurnButton);
+            snapTurn = true;
+            MemoryResultData.Instance.SetXRSettings(snapTurn, teleport);
         }
 
-        private void ToggleTurnMode()
+        private void EnableSmoothTurnMode()
         {
-            locomotionManager.ToggleTurnMode();
+            SetButtonColors(smoothTurnButton, snapTurnButton);
+            snapTurn = false;
+            MemoryResultData.Instance.SetXRSettings(snapTurn, teleport);
         }
 
-        private void ToggleMoveMode()
+        private void SetButtonColors(Button active, Button inactive)
         {
-            locomotionManager.ToggleMoveMode();
-        }
-        
-
-        private void FacePlayer()
-        {
-            Vector3 lookDirection = playerCamera.position - transform.position;
-            lookDirection.y = 0;
-            if (lookDirection != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * smoothSpeed);
-            }
+            if (active.TryGetComponent(out Image activeImage))
+                activeImage.color = activeColor;
+            if (inactive.TryGetComponent(out Image inactiveImage))
+                inactiveImage.color = inactiveColor;
         }
     }
 }

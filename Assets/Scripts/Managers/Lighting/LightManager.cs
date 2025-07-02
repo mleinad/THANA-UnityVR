@@ -56,8 +56,8 @@ public class LightManager : MonoBehaviour, ILightManager
         _transitionCts?.Cancel();
         _transitionCts = new CancellationTokenSource();
 
-        float emphasizedStrength = Mathf.Clamp01(strength * 1.5f); // Boost color strength
-        _transitionEffect.SmoothTransitionAsync(color, emphasizedStrength, _transitionCts.Token).Forget();
+        //float emphasizedStrength = Mathf.Clamp01(strength); // Boost color strength
+        _transitionEffect.SmoothTransitionAsync(color, strength, _transitionCts.Token).Forget();
     }
 
 
@@ -69,6 +69,7 @@ public class LightManager : MonoBehaviour, ILightManager
     {
         if (_suspicionMultiplier > 0f)
         {
+            Debug.Log("flickering lights...");
             _flickerEffect.FlickerLights(_suspicionMultiplier);
         }
     }
