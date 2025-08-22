@@ -2,8 +2,6 @@
 
 **Project Type:** Unity VR
 
-**Developer:** Daniel Malheiro
-
 **Genre:** Sci‑Fi / Psychological / Simulation
 
 ---
